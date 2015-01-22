@@ -93,8 +93,14 @@ debug-shared: CFLAGS := -g -DDEBUG -DDEBUG_LVL="$(DEBUG_LVL)" $(filter-out -O2,$
 debug-shared: CXXFLAGS := -g -DDEBUG -DDEBUG_LVL="$(DEBUG_LVL)" $(filter-out -O2,$(CXXFLAGS))
 debug-shared: shared
 
+debug-dylib: LDFLAGS := -g
+debug-dylib: CFLAGS := -g -DDEBUG -DDEBUG_LVL="$(DEBUG_LVL)" $(filter-out -O2,$(CFLAGS))
+debug-dylib: CXXFLAGS := -g -DDEBUG -DDEBUG_LVL="$(DEBUG_LVL)" $(filter-out -O2,$(CXXFLAGS))
+debug-dylib: dylib
+
 static: lib/libsass.a
 shared: lib/libsass.so
+dylib: lib/libsass.dylib
 
 lib/libsass.a: $(COBJECTS) $(OBJECTS)
 	$(MKDIR) lib
@@ -103,6 +109,10 @@ lib/libsass.a: $(COBJECTS) $(OBJECTS)
 lib/libsass.so: $(COBJECTS) $(OBJECTS)
 	$(MKDIR) lib
 	$(CXX) -shared $(LDFLAGS) -o $@ $(COBJECTS) $(OBJECTS)
+
+lib/libsass.dylib: $(COBJECTS) $(OBJECTS)
+	$(MKDIR) lib
+	$(CXX) -dynamiclib $(LDFLAGS) -o $@ $(COBJECTS) $(OBJECTS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -120,6 +130,10 @@ install-static: lib/libsass.a
 	install -pm0755 $< $(DESTDIR)$(PREFIX)/$<
 
 install-shared: lib/libsass.so
+	$(MKDIR) $(DESTDIR)$(PREFIX)\/lib/
+	install -pm0755 $< $(DESTDIR)$(PREFIX)/$<
+
+install-dylib: lib/libsass.dylib
 	$(MKDIR) $(DESTDIR)$(PREFIX)\/lib/
 	install -pm0755 $< $(DESTDIR)$(PREFIX)/$<
 
